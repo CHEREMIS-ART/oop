@@ -1,6 +1,7 @@
 class AccountError(Exception):
     def __init__(self, message):
         self.message = message
+        super().__init__(self.message)
 
 
 class AccountFrozenError(AccountError):
@@ -51,5 +52,23 @@ class InsufficientFundsError(AccountError):
 
 class UnderageError(AccountError):
     def __init__(self, message="Клиенту нет 18 лет."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class CurrencyError(AccountError):
+    def __init__(self, currency, message=None):
+        self.currency = currency
+        if message is None:
+            message = f"Валюта {self.currency} не поддерживается банком."
+        self.message = message
+        super().__init__(self.message)
+
+
+class AccountStatusError(AccountError):
+    def __init__(self, status, message=None):
+        self.status = status
+        if message is None:
+            message = f"Статус {self.status} не определен."
         self.message = message
         super().__init__(self.message)

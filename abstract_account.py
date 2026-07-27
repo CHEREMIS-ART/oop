@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 import errors
 from account_status import AccountStatus
@@ -6,7 +7,9 @@ from owner_info import OwnerInfo
 
 
 class AbstractAccount(ABC):
-    def __init__(self, account_id: int, owner_info: OwnerInfo, balance: float) -> None:
+    def __init__(
+        self, account_id: int, owner_info: OwnerInfo, balance: Union[float, int]
+    ) -> None:
         if owner_info.age < 18:
             raise errors.UnderageError()
         self.__account_id = account_id
@@ -20,7 +23,12 @@ class AbstractAccount(ABC):
         return self.__balance
 
     @balance.setter
-    def balance(self, value: float) -> None:
+    def balance(self, value: Union[float, int]) -> None:
+        if not isinstance(value, (float, int)):
+            raise errors.InvalidOperationError(
+                self.account_id_hiden,
+                message=f"Oжидается float или int, передано {type(value)}",
+            )
         if value < 0:
             raise errors.InvalidOperationError(
                 self.account_id_hiden, message="Баланс не может быть отрицательным"
