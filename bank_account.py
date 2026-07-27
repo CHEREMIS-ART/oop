@@ -12,7 +12,7 @@ class BankAccount(AbstractAccount):
     def __init__(
         self,
         owner_info: OwnerInfo,
-        balance: float,
+        balance: Union[float, int],
         currency: Union[Currency, str],
         account_id=None,
     ):

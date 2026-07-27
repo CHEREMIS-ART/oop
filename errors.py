@@ -72,3 +72,11 @@ class AccountStatusError(AccountError):
             message = f"Статус {self.status} не определен."
         self.message = message
         super().__init__(self.message)
+
+
+class OwnerInfoError(AccountError):
+    def __init__(self, owner_info, message=None):
+        self.owner_info = owner_info
+        if message is None:
+            message = f"Ожидается OwnerInfo, передано {type(self.owner_info)}"
+        super().__init__(self.message)

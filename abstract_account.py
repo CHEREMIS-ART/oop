@@ -10,6 +10,8 @@ class AbstractAccount(ABC):
     def __init__(
         self, account_id: int, owner_info: OwnerInfo, balance: Union[float, int]
     ) -> None:
+        if not isinstance(owner_info, OwnerInfo):
+            raise errors.OwnerInfoError(owner_info)
         if owner_info.age < 18:
             raise errors.UnderageError()
         self.__account_id = account_id
@@ -42,7 +44,7 @@ class AbstractAccount(ABC):
                 message=f"Невозможно заморозить счет в статусе {self.status}",
             )
         self.status = AccountStatus.FROZEN
-        print(f"Счет {self.account_id_hiden} заморожен.")
+        print(f"Счет ***{self.account_id_hiden} заморожен.")
 
     def unfreeze(self) -> None:
         if self.status != AccountStatus.FROZEN:
@@ -51,7 +53,7 @@ class AbstractAccount(ABC):
                 message=f"Невозможно разморозить счет в статусе {self.status}",
             )
         self.status = AccountStatus.ACTIVE
-        print(f"Счет {self.account_id_hiden} разморожен.")
+        print(f"Счет ***{self.account_id_hiden} разморожен.")
 
     def close(self) -> None:
         if self.status == AccountStatus.CLOSED:
@@ -62,7 +64,7 @@ class AbstractAccount(ABC):
         if self.balance != 0:
             raise errors.BalanceNotZeroError(self.account_id_hiden)
         self.status = AccountStatus.CLOSED
-        print(f"Счет {self.account_id_hiden} закрыт.")
+        print(f"Счет ***{self.account_id_hiden} закрыт.")
 
     @abstractmethod
     def deposit(self, amount: float) -> None:

@@ -1,4 +1,5 @@
 from bank_account import BankAccount
+from savings_account import SavingsAccount
 from owner_info import OwnerInfo
 from currency import Currency
 import errors
@@ -25,3 +26,15 @@ if __name__ == "__main__":
         print(error.message)
     except errors.AccountFrozenError as error:
         print(error.message)
+
+    masha_savings_account = SavingsAccount(owner, 1000, "kzt", monthly_interest=1.3)
+    masha_savings_account.deposit(250)
+    masha_savings_account.withdraw(1150)
+    masha_savings_account.deposit(2900)
+    masha_savings_account.freeze()
+    try:
+        masha_savings_account.apply_monthly_interest()
+    except errors.AccountError as error:
+        print(error)
+    masha_savings_account.get_account_info()
+    print(masha_savings_account)

@@ -25,9 +25,23 @@ class Currency(Enum):
             except ValueError:
                 raise errors.CurrencyError(value)
         raise errors.CurrencyError(
-            value,
-            message=f"Ожидается str или Currency, получено {type(value)}"
+            value, message=f"Ожидается str или Currency, получено {type(value)}"
         )
+
+    @classmethod
+    def get_interest_by_currency(
+        cls, currency: Union[str, "Currency"]
+    ) -> Union[float, int]:
+        if currency is Currency.RUB:
+            return 1.17
+        if currency is Currency.USD:
+            return 0.30
+        if currency is Currency.EUR:
+            return 0.19
+        if currency is Currency.KZT:
+            return 1.40
+        if currency is Currency.CNY:
+            return 0.25
 
     def __str__(self) -> str:
         return self.value
