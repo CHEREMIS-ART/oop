@@ -20,6 +20,9 @@ class BankAccount(AbstractAccount):
             account_id = uuid4().int
         super().__init__(account_id, owner_info, balance)
         self.currency = Currency.from_str(currency)
+        self._withdrawal_fee = 0.015
+        self._daily_deposied_limit = 250_000
+        self._daily_withdrawal_limit = 100_000
 
     def deposit(self, amount: Union[float, int]) -> None:
         if self.status == AccountStatus.FROZEN:
@@ -31,11 +34,17 @@ class BankAccount(AbstractAccount):
                 self.account_id_hiden,
                 message=f"Oжидается float или int, передано {type(amount)}",
             )
-        if amount <= 0:
+        if amount < 0:
             raise errors.InvalidOperationError(
                 self.account_id_hiden,
-                message="Пополнить счет можно только положительным значением",
+                message=f"Счет ***{self.account_id_hiden}. Значение должно быть > 0.",
             )
+        if amount > self._daily_deposied_limit:
+            raise errors.InvalidOperationError(
+                self.account_id_hiden,
+                message=f"Счет ***{self.account_id_hiden}. Дневной лимит поплнения исчерпан.",
+            )
+        self._daily_deposied_limit -= amount
         self.balance += amount
         print(
             f"Счет ***{self.account_id_hiden} пополнился на {amount} {self.currency}. Баланс: {self.balance} {self.currency}"
@@ -51,17 +60,29 @@ class BankAccount(AbstractAccount):
                 self.account_id_hiden,
                 message=f"Oжидается float или int, передано {type(amount)}",
             )
-        if amount <= 0:
+        if amount < 0:
             raise errors.InvalidOperationError(
                 self.account_id_hiden,
-                message=f"Счет ***{self.account_id_hiden}. Значение amount должно быть > 0.",
+                message=f"Счет ***{self.account_id_hiden}. Значение должно быть > 0.",
+            )
+        if amount > self._daily_withdrawal_limit:
+            raise errors.InvalidOperationError(
+                self.account_id_hiden,
+                message=f"Счет ***{self.account_id_hiden}. Дневной лимит переводов исчерпан.",
             )
         if amount > self.balance:
             raise errors.InsufficientFundsError(self.balance, amount)
+        bank_interest = amount * (self._withdrawal_fee / 100)
+        total = amount - bank_interest
+        self._daily_withdrawal_limit -= amount
         self.balance -= amount
         print(
-            f"Счет ***{self.account_id_hiden} снято {amount} {self.currency}. Баланс: {self.balance} {self.currency}"
+            f"Счет ***{self.account_id_hiden} снято {total} {self.currency}. Коммисия банка составила: {bank_interest} {self.currency}. Баланс: {self.balance} {self.currency}"
         )
+
+    def reset_daily_limits(self) -> None:
+        self._daily_deposied_limit = 250_000
+        self._daily_withdrawal_limit = 100_000
 
     def get_account_info(self) -> str:
         return str(self)

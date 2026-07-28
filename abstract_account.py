@@ -17,25 +17,30 @@ class AbstractAccount(ABC):
         self.__account_id = account_id
         self.account_id_hiden = str(self.__account_id)[-4:]
         self.owner_info = owner_info
-        self.balance = balance
         self.status = AccountStatus.ACTIVE
+        self.balance = balance
 
     @property
-    def balance(self) -> float:
-        return self.__balance
+    def balance(self) -> Union[float, int]:
+        return self._balance
 
     @balance.setter
     def balance(self, value: Union[float, int]) -> None:
+        if self.status == AccountStatus.FROZEN:
+            raise errors.AccountFrozenError(self.account_id_hiden)
+        if self.status == AccountStatus.CLOSED:
+            raise errors.AccountClosedError(self.account_id_hiden)
         if not isinstance(value, (float, int)):
             raise errors.InvalidOperationError(
                 self.account_id_hiden,
-                message=f"Oжидается float или int, передано {type(value)}",
+                message=f"Oжидается float или int, передано {type(amount)}",
             )
         if value < 0:
             raise errors.InvalidOperationError(
-                self.account_id_hiden, message="Баланс не может быть отрицательным"
+                self.account_id_hiden,
+                message=f"Счет ***{self.account_id_hiden}. Значение должно быть > 0.",
             )
-        self.__balance = value
+        self._balance = value
 
     def freeze(self) -> None:
         if self.status != AccountStatus.ACTIVE:
