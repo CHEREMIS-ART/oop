@@ -8,7 +8,7 @@ class AccountFrozenError(AccountError):
     def __init__(self, id: str, message=None):
         self.id = id
         if message is None:
-            message = f"Счет ***{self.id} заморожен. Операция недоступна."
+            message = f"Счет {self.id} заморожен. Операция недоступна."
         self.message = message
         super().__init__(self.message)
 
@@ -17,7 +17,7 @@ class AccountClosedError(AccountError):
     def __init__(self, id: str, message=None):
         self.id = id
         if message is None:
-            message = f"Счет ***{self.id} закрыт. Операция недоступна."
+            message = f"Счет {self.id} закрыт. Операция недоступна."
         self.message = message
         super().__init__(self.message)
 
@@ -26,7 +26,7 @@ class BalanceNotZeroError(AccountError):
     def __init__(self, id: str, message=None):
         self.id = id
         if message is None:
-            message = f"Нельзя закрыть счет ***{self.id}. Ненулевой баланс."
+            message = f"Нельзя закрыть счет {self.id}. Ненулевой баланс."
         self.message = message
         super().__init__(self.message)
 
@@ -35,7 +35,7 @@ class InvalidOperationError(AccountError):
     def __init__(self, id: str, message=None):
         self.id = id
         if message is None:
-            message = f"Счет ***{self.id}. Недопустимая операция."
+            message = f"Счет {self.id}. Недопустимая операция."
         self.message = message
         super().__init__(self.message)
 

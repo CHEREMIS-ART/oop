@@ -12,57 +12,52 @@ class AbstractAccount(ABC):
     ) -> None:
         if owner_info.age < 18:
             raise errors.UnderageError()
-        self.__account_id = account_id
-        self.account_id_hiden = str(self.__account_id)[-4:]
+        if not isinstance(account_id, int):
+            raise errors.InvalidOperationError(
+                None, message=f"Oжидается для id тип: int, передан тип: {type(amount)}"
+            )
+        if not isinstance(balance, (float, int)):
+            raise errors.InvalidOperationError(
+                account_id,
+                message=f"Oжидается для balance тип: int или float, передан тип: {type(amount)}",
+            )
+        if balance < 0:
+            raise errors.InvalidOperationError(
+                account_id, message=f"Баланс должен быть положительным."
+            )
+        self._account_id = account_id
         self.owner_info = owner_info
-        self.balance = balance
+        self._balance = balance
         self.status = AccountStatus.ACTIVE
-
-    @property
-    def balance(self) -> float:
-        return self.__balance
-
-    @balance.setter
-    def balance(self, value: Union[float, int]) -> None:
-        if not isinstance(value, (float, int)):
-            raise errors.InvalidOperationError(
-                self.account_id_hiden,
-                message=f"Oжидается float или int, передано {type(value)}",
-            )
-        if value < 0:
-            raise errors.InvalidOperationError(
-                self.account_id_hiden, message="Баланс не может быть отрицательным"
-            )
-        self.__balance = value
 
     def freeze(self) -> None:
         if self.status != AccountStatus.ACTIVE:
             raise errors.AccountFrozenError(
-                self.account_id_hiden,
+                self._account_id,
                 message=f"Невозможно заморозить счет в статусе {self.status}",
             )
         self.status = AccountStatus.FROZEN
-        print(f"Счет {self.account_id_hiden} заморожен.")
+        print(f"Счет {self._account_id} заморожен.")
 
     def unfreeze(self) -> None:
         if self.status != AccountStatus.FROZEN:
             raise errors.AccountFrozenError(
-                self.account_id_hiden,
+                self._account_id,
                 message=f"Невозможно разморозить счет в статусе {self.status}",
             )
         self.status = AccountStatus.ACTIVE
-        print(f"Счет {self.account_id_hiden} разморожен.")
+        print(f"Счет {self._account_id} разморожен.")
 
     def close(self) -> None:
         if self.status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(
-                self.account_id_hiden,
-                message=f"Счет ***{self.account_id_hiden} уже закрыт",
+                self._account_id,
+                message=f"Счет ***{self._account_id} уже закрыт",
             )
-        if self.balance != 0:
-            raise errors.BalanceNotZeroError(self.account_id_hiden)
+        if self._balance != 0:
+            raise errors.BalanceNotZeroError(self._account_id)
         self.status = AccountStatus.CLOSED
-        print(f"Счет {self.account_id_hiden} закрыт.")
+        print(f"Счет {self._account_id} закрыт.")
 
     @abstractmethod
     def deposit(self, amount: float) -> None:

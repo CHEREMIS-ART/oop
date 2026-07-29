@@ -17,50 +17,50 @@ class BankAccount(AbstractAccount):
         account_id=None,
     ):
         if account_id is None:
-            account_id = uuid4().int
+            account_id = int(str(uuid4().int)[:16])
         super().__init__(account_id, owner_info, balance)
         self.currency = Currency.from_str(currency)
 
     def deposit(self, amount: Union[float, int]) -> None:
         if self.status == AccountStatus.FROZEN:
-            raise errors.AccountFrozenError(self.account_id_hiden)
+            raise errors.AccountFrozenError(self._account_id)
         if self.status == AccountStatus.CLOSED:
-            raise errors.AccountClosedError(self.account_id_hiden)
+            raise errors.AccountClosedError(self._account_id)
         if not isinstance(amount, (float, int)):
             raise errors.InvalidOperationError(
-                self.account_id_hiden,
+                self._account_id,
                 message=f"Oжидается float или int, передано {type(amount)}",
             )
         if amount <= 0:
             raise errors.InvalidOperationError(
-                self.account_id_hiden,
+                self._account_id,
                 message="Пополнить счет можно только положительным значением",
             )
-        self.balance += amount
+        self._balance += amount
         print(
-            f"Счет ***{self.account_id_hiden} пополнился на {amount} {self.currency}. Баланс: {self.balance} {self.currency}"
+            f"Счет {self._account_id} пополнился на {amount} {self.currency}. Баланс: {self._balance} {self.currency}"
         )
 
     def withdraw(self, amount: Union[float, int]) -> None:
         if self.status == AccountStatus.FROZEN:
-            raise errors.AccountFrozenError(self.account_id_hiden)
+            raise errors.AccountFrozenError(self._account_id)
         if self.status == AccountStatus.CLOSED:
-            raise errors.AccountClosedError(self.account_id_hiden)
+            raise errors.AccountClosedError(self._account_id)
         if not isinstance(amount, (float, int)):
             raise errors.InvalidOperationError(
-                self.account_id_hiden,
+                self._account_id,
                 message=f"Oжидается float или int, передано {type(amount)}",
             )
         if amount <= 0:
             raise errors.InvalidOperationError(
-                self.account_id_hiden,
-                message=f"Счет ***{self.account_id_hiden}. Значение amount должно быть > 0.",
+                self._account_id,
+                message=f"Счет {self._account_id}. Значение amount должно быть > 0.",
             )
-        if amount > self.balance:
-            raise errors.InsufficientFundsError(self.balance, amount)
-        self.balance -= amount
+        if amount > self._balance:
+            raise errors.InsufficientFundsError(self._balance, amount)
+        self._balance -= amount
         print(
-            f"Счет ***{self.account_id_hiden} снято {amount} {self.currency}. Баланс: {self.balance} {self.currency}"
+            f"Счет {self._account_id} снято {amount} {self.currency}. Баланс: {self._balance} {self.currency}"
         )
 
     def get_account_info(self) -> str:
@@ -70,8 +70,8 @@ class BankAccount(AbstractAccount):
         return (
             f" - Тип: {self.__class__.__name__}"
             f"\n - Клиент: {self.owner_info}"
-            f"\n - Счет: ***{self.account_id_hiden}"
+            f"\n - Счет: {self._account_id}"
             f"\n - Статус: {self.status}"
-            f"\n - Баланс: {self.balance}"
+            f"\n - Баланс: {self._balance}"
             f"\n - Валюта: {self.currency}"
         )
