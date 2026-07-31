@@ -12,10 +12,6 @@ class AccountStatus(Enum):
 
     @classmethod
     def from_str(cls, value: Union[str, "AccountStatus"]) -> "AccountStatus":
-        if value is None:
-            raise errors.AccountStatusError(
-                value, message="Статус аккаунта не может быть None."
-            )
         if isinstance(value, cls):
             return value
         if isinstance(value, str):
@@ -23,9 +19,11 @@ class AccountStatus(Enum):
             try:
                 return AccountStatus(value_lower)
             except ValueError:
-                raise errors.AccountStatusError(value)
-        raise errors.AccountStatusError(
-            value, message=f"Ожидается str или AccountStatus, получено {type(value)}"
+                raise errors.InstanceTypeError(
+                    cls.__name__, value, (str, AccountStatus), "value"
+                )
+        raise errors.InstanceTypeError(
+            cls.__name__, value, (str, AccountStatus), "value"
         )
 
     def __str__(self) -> str:
