@@ -12,7 +12,7 @@ class PremiumAccount(BankAccount):
         self,
         owner_info: OwnerInfo,
         balance: Union[float, int],
-        currency: Currency,
+        currency: Union[Currency, str],
         account_id: int = None,
     ):
         super().__init__(owner_info, balance, currency, account_id)
@@ -27,9 +27,8 @@ class PremiumAccount(BankAccount):
         if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(self._account_id)
         if not isinstance(amount, (float, int)):
-            raise errors.InvalidOperationError(
-                self._account_id,
-                message=f"Oжидается float или int, передано {type(amount)}",
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, amount, (float, int), "amount"
             )
         if amount < 0:
             raise errors.InvalidOperationError(
@@ -47,7 +46,7 @@ class PremiumAccount(BankAccount):
                 amount,
                 message=f"Счет {self._account_id}. Запрошено {amount} {self._currency}, предел овердрафта может быть превышен.",
             )
-        bank_interest = amount * (self._withdrawal_fee / 100)
+        bank_interest = amount * self._withdrawal_fee
         total = amount - bank_interest
         self._daily_withdrawal_limit -= amount
         self._balance -= amount

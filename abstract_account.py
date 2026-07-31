@@ -11,17 +11,18 @@ class AbstractAccount(ABC):
         self, account_id: int, owner_info: OwnerInfo, balance: Union[float, int]
     ) -> None:
         if not isinstance(owner_info, OwnerInfo):
-            raise errors.OwnerInfoError(owner_info)
-        if owner_info.age < 18:
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, owner_info, (OwnerInfo,), "owner_info"
+            )
+        if owner_info._age < 18:
             raise errors.UnderageError()
         if not isinstance(account_id, int):
-            raise errors.InvalidOperationError(
-                None, message=f"Oжидается для id тип: int, передан тип: {type(amount)}"
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, account_id, (int,), "account_id"
             )
         if not isinstance(balance, (float, int)):
-            raise errors.InvalidOperationError(
-                account_id,
-                message=f"Oжидается для balance тип: int или float, передан тип: {type(amount)}",
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, balance, (float, int), "balance"
             )
         if balance < 0:
             raise errors.InvalidOperationError(

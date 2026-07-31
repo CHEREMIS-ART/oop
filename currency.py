@@ -1,7 +1,7 @@
 from enum import Enum, unique
 from typing import Union
 
-import errors
+from errors import InstanceTypeError
 
 
 @unique
@@ -14,8 +14,6 @@ class Currency(Enum):
 
     @classmethod
     def from_str(cls, value: Union[str, "Currency"]) -> "Currency":
-        if value is None:
-            raise errors.CurrencyError(value, message=f"Валюта не может быть None.")
         if isinstance(value, cls):
             return value
         if isinstance(value, str):
@@ -23,10 +21,8 @@ class Currency(Enum):
             try:
                 return Currency(value_upper)
             except ValueError:
-                raise errors.CurrencyError(value)
-        raise errors.CurrencyError(
-            value, message=f"Ожидается str или Currency, получено {type(value)}"
-        )
+                raise InstanceTypeError(cls.__name__, value, (str, Currency), "value")
+        raise InstanceTypeError(cls.__name__, value, (str, Currency), "value")
 
     @classmethod
     def get_interest_by_currency(

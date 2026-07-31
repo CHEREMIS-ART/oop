@@ -19,12 +19,14 @@ class SavingsAccount(BankAccount):
     ):
         super().__init__(owner_info, balance, currency, account_id)
         if not isinstance(monthly_interest, (float, int)):
-            raise errors.InvalidOperationError(
-                self._account_id,
-                message=f"Ожидается для monthly_interest тип: float или int, принят тип: {type(value)}",
+            raise errors.InstanceTypeError(
+                self.__class__.__name__,
+                monthly_interest,
+                (float, int),
+                "monthly_interest",
             )
         interest = Currency.get_interest_by_currency(self._currency)
-        if not (monthly_interest > 0 and monthly_interest <= interest):
+        if not (0 <= monthly_interest <= interest):
             raise errors.InvalidOperationError(
                 self._account_id,
                 message=f"Месечная ставка для валюты {self._currency} должна быть от 0 до {interest}",
@@ -38,7 +40,7 @@ class SavingsAccount(BankAccount):
                 self._account_id,
                 f"Счет {self._account_id} заморожен. Операция недоступна.",
             )
-        if self.status == AccountStatus.CLOSED:
+        if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(
                 self._account_id,
                 f"Счет {self._account_id} закрыт. Операция недоступна.",

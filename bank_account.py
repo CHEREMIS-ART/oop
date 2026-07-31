@@ -30,9 +30,8 @@ class BankAccount(AbstractAccount):
         if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(self._account_id)
         if not isinstance(amount, (float, int)):
-            raise errors.InvalidOperationError(
-                self._account_id,
-                message=f"Oжидается float или int, передано {type(amount)}",
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, amount, (float, int), "amount"
             )
         if amount < 0:
             raise errors.InvalidOperationError(
@@ -50,9 +49,8 @@ class BankAccount(AbstractAccount):
         if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(self._account_id)
         if not isinstance(amount, (float, int)):
-            raise errors.InvalidOperationError(
-                self._account_id,
-                message=f"Oжидается float или int, передано {type(amount)}",
+            raise errors.InstanceTypeError(
+                self.__class__.__name__, amount, (float, int), "amount"
             )
         if amount < 0:
             raise errors.InvalidOperationError(

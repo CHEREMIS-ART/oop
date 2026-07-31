@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class AccountError(Exception):
     def __init__(self, message):
         self.message = message
@@ -56,27 +59,25 @@ class UnderageError(AccountError):
         super().__init__(self.message)
 
 
-class CurrencyError(AccountError):
-    def __init__(self, currency, message=None):
-        self.currency = currency
+class InstanceTypeError(AccountError):
+    def __init__(
+        self,
+        class_name: str,
+        value: Any,
+        expected_type: tuple[type] = None,
+        var_name: str = None,
+        message=None,
+    ):
+        self.class_name = class_name
+        self.value = value
+        self.expected_type = expected_type
+        self.var_name = var_name
         if message is None:
-            message = f"Валюта {self.currency} не поддерживается банком."
+            type_names = ", ".join(t.__name__ for t in expected_type)
+            actual_type = type(value).__name__
+            if self.var_name:
+                message = f"Класс: {self.class_name}. Ожидается для {self.var_name} тип: {type_names}. Передан тип: {actual_type}"
+            else:
+                message = f"Класс: {self.class_name}. Ожидается тип: {type_names}. Передан тип: {actual_type}"
         self.message = message
-        super().__init__(self.message)
-
-
-class AccountStatusError(AccountError):
-    def __init__(self, status, message=None):
-        self.status = status
-        if message is None:
-            message = f"Статус {self.status} не определен."
-        self.message = message
-        super().__init__(self.message)
-
-
-class OwnerInfoError(AccountError):
-    def __init__(self, owner_info, message=None):
-        self.owner_info = owner_info
-        if message is None:
-            message = f"Ожидается OwnerInfo, передано {type(self.owner_info)}"
         super().__init__(self.message)
