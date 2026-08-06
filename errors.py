@@ -53,12 +53,6 @@ class InsufficientFundsError(AccountError):
         super().__init__(self.message)
 
 
-class UnderageError(AccountError):
-    def __init__(self, message="Клиенту нет 18 лет."):
-        self.message = message
-        super().__init__(self.message)
-
-
 class InstanceTypeError(AccountError):
     def __init__(
         self,
@@ -79,5 +73,81 @@ class InstanceTypeError(AccountError):
                 message = f"Класс: {self.class_name}. Ожидается для {self.var_name} тип: {type_names}. Передан тип: {actual_type}"
             else:
                 message = f"Класс: {self.class_name}. Ожидается тип: {type_names}. Передан тип: {actual_type}"
+        self.message = message
+        super().__init__(self.message)
+
+
+class DuplicateAccountError(AccountError):
+    def __init__(self, id: str, message=None):
+        self.id = id
+        if message is None:
+            message = f"Счёт {self.id} уже добавлен клиенту."
+        self.message = message
+        super().__init__(self.message)
+
+
+class OperationTimeRestrictedError(AccountError):
+    def __init__(self, message="Операции запрещены с 00:00 до 05:00."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class UnderageError(ClientError):
+    def __init__(self, message="Клиенту нет 18 лет."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class NumberOfAccountsError(ClientError):
+    def __init__(self, message="У клиента есть еще счета."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientFrozenError(ClientError):
+    def __init__(self, message="Клиент заблокирован. Операции со счетами недоступны."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientClosedError(ClientError):
+    def __init__(self, message="Клиент закрыт. Все счета клиента закрыты."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientRestrictedError(ClientError):
+    def __init__(
+        self, message="Клиент ограничен в доступе. Возможно только пополнение счетов."
+    ):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientNotVerifiedError(ClientError):
+    def __init__(
+        self, message="Клиент еще не верифицирован. Операции со счетами недоступны."
+    ):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ClientStatusTypeError(ClientError):
+    def __init__(self, message="Неизвестный статус клиента."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class DuplicateClientError(ClientError):
+    def __init__(self, id: str, message=None):
+        self.id = id
+        if message is None:
+            message = f"Клиент {self.id} уже обслуживается банком."
         self.message = message
         super().__init__(self.message)

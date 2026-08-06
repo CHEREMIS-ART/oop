@@ -3,19 +3,18 @@ from typing import Union
 
 import errors
 from account_status import AccountStatus
-from owner_info import OwnerInfo
+from client import Client
+from client_status import ClientStatus
 
 
 class AbstractAccount(ABC):
     def __init__(
-        self, account_id: int, owner_info: OwnerInfo, balance: Union[float, int]
+        self, account_id: int, client: Client, balance: Union[float, int]
     ) -> None:
-        if not isinstance(owner_info, OwnerInfo):
+        if not isinstance(client, Client):
             raise errors.InstanceTypeError(
-                self.__class__.__name__, owner_info, (OwnerInfo,), "owner_info"
+                self.__class__.__name__, client, (Client,), "client"
             )
-        if owner_info._age < 18:
-            raise errors.UnderageError()
         if not isinstance(account_id, int):
             raise errors.InstanceTypeError(
                 self.__class__.__name__, account_id, (int,), "account_id"
@@ -29,11 +28,31 @@ class AbstractAccount(ABC):
                 account_id, message=f"Баланс должен быть положительным."
             )
         self._account_id = account_id
-        self._owner_info = owner_info
+        self._client = client
         self._balance = balance
         self._status = AccountStatus.ACTIVE
 
+    def get_account_id(self) -> int:
+        return self._account_id
+
+    def get_account_client(self) -> Client:
+        return self._client
+
+    def _ensure_client_status(self, allowed_statuses: tuple) -> None:
+        client_status = self._client.get_status()
+        if client_status == ClientStatus.FROZEN:
+            raise errors.ClientFrozenError()
+        if client_status == ClientStatus.CLOSED:
+            raise errors.ClientClosedError()
+        if client_status == ClientStatus.PENDING_VERIFICATION:
+            raise errors.ClientNotVerifiedError()
+        if client_status not in allowed_statuses:
+            raise errors.ClientStatusTypeError(
+                f"Статус клиента {client_status} не разрешён для данной операции."
+            )
+
     def freeze(self) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status != AccountStatus.ACTIVE:
             raise errors.AccountFrozenError(
                 self._account_id,
@@ -43,6 +62,7 @@ class AbstractAccount(ABC):
         print(f"Счет {self._account_id} заморожен.")
 
     def unfreeze(self) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE, ClientStatus.RESTRICTED))
         if self._status != AccountStatus.FROZEN:
             raise errors.AccountFrozenError(
                 self._account_id,
@@ -52,6 +72,7 @@ class AbstractAccount(ABC):
         print(f"Счет {self._account_id} разморожен.")
 
     def close(self) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(
                 self._account_id,

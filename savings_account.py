@@ -1,9 +1,10 @@
 from typing import Union
 
 from bank_account import BankAccount
-from owner_info import OwnerInfo
+from client import Client
 from currency import Currency
 from account_status import AccountStatus
+from client_status import ClientStatus
 import errors
 
 
@@ -11,13 +12,13 @@ class SavingsAccount(BankAccount):
 
     def __init__(
         self,
-        owner_info: OwnerInfo,
+        client: Client,
         balance: Union[float, int],
         currency: Union[Currency, str],
         account_id: int = None,
         monthly_interest: Union[float, int] = 0.01,
     ):
-        super().__init__(owner_info, balance, currency, account_id)
+        super().__init__(client, balance, currency, account_id)
         if not isinstance(monthly_interest, (float, int)):
             raise errors.InstanceTypeError(
                 self.__class__.__name__,
@@ -35,6 +36,7 @@ class SavingsAccount(BankAccount):
         self.__monthly_interest = monthly_interest
 
     def apply_monthly_interest(self) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(
                 self._account_id,
@@ -53,6 +55,7 @@ class SavingsAccount(BankAccount):
         )
 
     def withdraw(self, amount: Union[float, int]) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         super().withdraw(amount)
         if self._balance < self.__min_balance:
             self.__min_balance = self._balance

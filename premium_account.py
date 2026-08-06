@@ -1,27 +1,29 @@
 from typing import Union
 
 from bank_account import BankAccount
-from owner_info import OwnerInfo
+from client import Client
 from currency import Currency
 from account_status import AccountStatus
+from client_status import ClientStatus
 import errors
 
 
 class PremiumAccount(BankAccount):
     def __init__(
         self,
-        owner_info: OwnerInfo,
+        client: Client,
         balance: Union[float, int],
         currency: Union[Currency, str],
         account_id: int = None,
     ):
-        super().__init__(owner_info, balance, currency, account_id)
+        super().__init__(client, balance, currency, account_id)
         self._withdrawal_fee = 0.01
         self._daily_deposied_limit = 1_000_000_000
         self._daily_withdrawal_limit = 500_000
         self.__overdraft_limit = -100_000
 
     def withdraw(self, amount: Union[float, int]) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:
@@ -55,6 +57,10 @@ class PremiumAccount(BankAccount):
         )
 
     def reset_daily_limits(self) -> None:
+        if self._client.get_status() == ClientStatus.CLOSED:
+            raise errors.ClientClosedError()
+        if self._status == AccountStatus.CLOSED:
+            raise errors.AccountClosedError()
         self._daily_deposied_limit = 1_000_000_000
         self._daily_withdrawal_limit = 500_000
 

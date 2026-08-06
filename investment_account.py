@@ -1,10 +1,11 @@
 from typing import Union
 
 from bank_account import BankAccount
-from owner_info import OwnerInfo
+from client import Client
 from currency import Currency
 from asset import Asset
 from account_status import AccountStatus
+from client_status import ClientStatus
 from stock import Stock
 from bond import Bond
 from etf import Etf
@@ -14,15 +15,16 @@ import errors
 class InvestmentAccount(BankAccount):
     def __init__(
         self,
-        owner_info: OwnerInfo,
+        client: Client,
         balance: Union[float, int],
         currency: Union[Currency, str],
         account_id: int = None,
     ):
-        super().__init__(owner_info, balance, currency, account_id)
+        super().__init__(client, balance, currency, account_id)
         self._assets = {}  # {symbol: {"asset": Asset, "quantity": int}}
 
     def buy_asset(self, asset: Asset, quantity: int) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:
@@ -55,6 +57,7 @@ class InvestmentAccount(BankAccount):
         )
 
     def sell_asset(self, symbol: str, quantity: int) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:
@@ -103,6 +106,7 @@ class InvestmentAccount(BankAccount):
     def project_yearly_growth(
         self, years: int, price_growth_rate: float = 0.05
     ) -> float:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:
@@ -147,6 +151,7 @@ class InvestmentAccount(BankAccount):
         return future_value
 
     def accrue_income(self, days: int = 365) -> None:
+        self._ensure_client_status((ClientStatus.ACTIVE,))
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:

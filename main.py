@@ -1,33 +1,119 @@
 from datetime import date
 
+from bank import Bank
 from bank_account import BankAccount
 from savings_account import SavingsAccount
 from premium_account import PremiumAccount
 from investment_account import InvestmentAccount
-from owner_info import OwnerInfo
+from client import Client
 from currency import Currency
 from stock import Stock
 from bond import Bond
 from etf import Etf
 from sectors_type import SectorType
+from account_type import AccountType
+from errors import AccountFrozenError, BalanceNotZeroError
 import errors
 
 
+def test_bank():
+    bank = Bank("Тестовый банк")
+
+    client1 = Client(
+        passport_series=1234,
+        passport_number=567890,
+        age=25,
+        phone_number=123456789,
+        address="ул. Ленина, 1",
+        first_name="Иван",
+        last_name="Петров",
+    )
+    client2 = Client(
+        passport_series=4321,
+        passport_number=987654,
+        age=30,
+        phone_number=987654321,
+        address="ул. Пушкина, 2",
+        first_name="Мария",
+        last_name="Иванова",
+    )
+    client1.verification_client()
+    client2.verification_client()
+    
+    bank.add_client(client1)
+    bank.add_client(client2)
+
+    acc1 = bank.open_account(client1, AccountType.SAVINGS, 1000, Currency.RUB)
+    acc2 = bank.open_account(client2, AccountType.PREMIUM, 5000, Currency.USD)
+
+    print("Баланс банка:", bank.get_total_balance())
+
+    try:
+        bank.authenticate_client(client1.get_client_id(), 1234, 567890)
+        print("Клиент1 аутентифицирован успешно.")
+    except Exception as e:
+        print("Ошибка аутентификации:", e)
+
+    try:
+        bank.authenticate_client(client1.get_client_id(), 9999, 999999)
+    except Exception as e:
+        print("Ожидаемая ошибка:", e)
+
+    try:
+        bank.authenticate_client(client1.get_client_id(), 9999, 999999)
+    except Exception as e:
+        print("Вторая попытка:", e)
+    try:
+        bank.authenticate_client(client1.get_client_id(), 9999, 999999)
+    except Exception as e:
+        print("Третья попытка (блокировка):", e)
+
+    print("Статус клиента1 после блокировки:", client1.get_status())
+
+    try:
+        bank.open_account(client1, AccountType.SAVINGS, 100, Currency.RUB)
+    except Exception as e:
+        print("Ожидаемая ошибка открытия счёта:", e)
+
+    bank.freeze_account(acc2.get_account_id())
+    print("Счёт acc2 заморожен")
+
+    try:
+        acc2.withdraw(100)
+    except AccountFrozenError as e:
+        print("Ошибка при снятии с замороженного счёта:", e)
+
+    bank.unfreeze_account(acc2.get_account_id())
+    print("Счёт acc2 разморожен")
+
+    try:
+        bank.close_account(acc2.get_account_id())
+    except BalanceNotZeroError as e:
+        print("Ошибка закрытия (баланс не нулевой):", e)
+
+    acc2.withdraw(5000)
+    bank.close_account(acc2.get_account_id())
+    print("Счёт acc2 закрыт")
+
+    print("Поиск по валюте RUB:", bank.search_accounts(currency="RUB"))
+    print("Рейтинг клиентов:", bank.get_clients_ranking())
+
+
 if __name__ == "__main__":
-    owner = OwnerInfo("Ivan", "Ivanov", 30, 1234, 7755533)
+    owner = Client(1234, 7755533, 30, 123456789, "ул. Примерная, 1", "Ivan", "Ivanov")
+    owner.verification_client()
     try:
         ivan_account = BankAccount(owner, 1000, Currency.RUB)
         ivan_account.deposit(500)
         ivan_account.withdraw(250)
         print(ivan_account.get_account_info())
-    except errors.CurrencyError as error:
-        print(error.message)
     except errors.AccountError as error:
         print(error.message)
 
-    owner = OwnerInfo("Masha", "Frolova", 21, 4321, 5555777)
+    owner2 = Client(4321, 5555777, 21, 987654321, "ул. Тестовая, 2", "Masha", "Frolova")
+    owner2.verification_client()
     try:
-        masha_account = BankAccount(owner, 0, "usd")
+        masha_account = BankAccount(owner2, 0, "usd")
         masha_account.freeze()
         masha_account.deposit(1000)
     except errors.InstanceTypeError as error:
@@ -35,7 +121,7 @@ if __name__ == "__main__":
     except errors.AccountFrozenError as error:
         print(error.message)
 
-    masha_savings_account = SavingsAccount(owner, 1000, "kzt", monthly_interest=1.3)
+    masha_savings_account = SavingsAccount(owner2, 1000, "kzt", monthly_interest=1.3)
     masha_savings_account.deposit(250)
     masha_savings_account.withdraw(1150)
     masha_savings_account.deposit(2900)
@@ -47,7 +133,7 @@ if __name__ == "__main__":
     masha_savings_account.get_account_info()
     print(masha_savings_account)
 
-    masha_premium_account = PremiumAccount(owner, 100_000, "usd")
+    masha_premium_account = PremiumAccount(owner2, 100_000, "usd")
     print(masha_premium_account.get_account_info())
     masha_premium_account.withdraw(90_000)
     masha_premium_account.withdraw(20_000)
@@ -58,7 +144,10 @@ if __name__ == "__main__":
         print(str(error))
     masha_premium_account.deposit(200_000)
 
-    owner_petr = OwnerInfo("Petr", "Petrov", 25, 5678, 1234567)
+    owner_petr = Client(
+        5678, 1234567, 25, 555123456, "ул. Петрова, 3", "Petr", "Petrov"
+    )
+    owner_petr.verification_client()
     petr_ivest_account = InvestmentAccount(owner_petr, 50_000, Currency.RUB)
     print(petr_ivest_account)
 
@@ -117,3 +206,5 @@ if __name__ == "__main__":
         petr_ivest_account.close()
     except errors.AccountError as e:
         print(f"\nОжидаемая ошибка при закрытии (баланс не нулевой): {e}")
+
+    test_bank()
