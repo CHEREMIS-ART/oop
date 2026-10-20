@@ -16,7 +16,7 @@ class PremiumAccount(BankAccount):
         account_id: int = None,
     ):
         super().__init__(owner_info, balance, currency, account_id)
-        self._withdrawal_fee = 0.01
+        self._withdrawal_fee = 1
         self._daily_deposied_limit = 1_000_000_000
         self._daily_withdrawal_limit = 500_000
         self.__overdraft_limit = -100_000
@@ -46,12 +46,11 @@ class PremiumAccount(BankAccount):
                 amount,
                 message=f"Счет {self._account_id}. Запрошено {amount} {self._currency}, предел овердрафта может быть превышен.",
             )
-        bank_interest = amount * self._withdrawal_fee
-        total = amount - bank_interest
         self._daily_withdrawal_limit -= amount
         self._balance -= amount
+        amount_with_fee = amount - self._withdrawal_fee
         print(
-            f"Счет {self._account_id} снято {total} {self._currency}. Коммисия банка составила: {bank_interest} {self._currency}. Баланс: {self._balance} {self._currency}"
+            f"Счет {self._account_id} снято {amount_with_fee} {self._currency}. Коммисия банка составила: {self._withdrawal_fee} {self._currency}. Баланс: {self._balance} {self._currency}"
         )
 
     def reset_daily_limits(self) -> None:
@@ -64,7 +63,7 @@ class PremiumAccount(BankAccount):
     def __str__(self) -> str:
         return (
             super().__str__()
-            + f"\n - Комиссия на операцию перевода: {self._withdrawal_fee} %"
+            + f"\n - Комиссия на операцию перевода: {self._withdrawal_fee} {self._currency}"
             f"\n - Дневной лимит пополнения: {self._daily_deposied_limit} {self._currency}"
             f"\n - Дневной лимит снятия: {self._daily_withdrawal_limit} {self._currency}"
             f"\n - Лимит овердрафта: {self.__overdraft_limit} {self._currency}"

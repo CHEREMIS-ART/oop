@@ -22,6 +22,9 @@ class InvestmentAccount(BankAccount):
         super().__init__(owner_info, balance, currency, account_id)
         self._assets = {}  # {symbol: {"asset": Asset, "quantity": int}}
 
+    def withdraw(self, amount: Union[float, int]) -> None:
+        super().withdraw(amount)
+
     def buy_asset(self, asset: Asset, quantity: int) -> None:
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
@@ -158,7 +161,7 @@ class InvestmentAccount(BankAccount):
         if days <= 0:
             raise errors.InvalidOperationError(
                 self._account_id,
-                message=f"Счет {self._account_id}. Количество дне для расчета дохода по активам должно быть > 0.",
+                message=f"Счет {self._account_id}. Количество дней для расчета дохода по активам должно быть > 0.",
             )
 
         total_income = 0.0
@@ -180,6 +183,9 @@ class InvestmentAccount(BankAccount):
             f"Счёт {self._account_id}. Начислен доход за {days} дней: "
             f"{total_income} {self._currency}. Баланс: {self._balance} {self._currency}"
         )
+
+    def get_account_info(self):
+        return str(self)
 
     def __str__(self) -> str:
         lines = [super().__str__()]

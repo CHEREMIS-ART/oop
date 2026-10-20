@@ -16,6 +16,7 @@ class SavingsAccount(BankAccount):
         currency: Union[Currency, str],
         account_id: int = None,
         monthly_interest: Union[float, int] = 0.01,
+        minimum_balance: [float, int] = 1000,
     ):
         super().__init__(owner_info, balance, currency, account_id)
         if not isinstance(monthly_interest, (float, int)):
@@ -31,7 +32,19 @@ class SavingsAccount(BankAccount):
                 self._account_id,
                 message=f"Месечная ставка для валюты {self._currency} должна быть от 0 до {interest}",
             )
-        self.__min_balance = self._balance
+        if not isinstance(minimum_balance, (float, int)):
+            raise errors.InstanceTypeError(
+                self.__class__.__name__,
+                minimum_balance,
+                (float, int),
+                "minimum_balance",
+            )
+        if balance < minimum_balance:
+            raise errors.InvalidOperationError(
+                minimum_balance,
+                message=f"Баланс не может быть меньше {minimum_balance}",
+            )
+        self.__min_balance = minimum_balance
         self.__monthly_interest = monthly_interest
 
     def apply_monthly_interest(self) -> None:
@@ -45,17 +58,19 @@ class SavingsAccount(BankAccount):
                 self._account_id,
                 f"Счет {self._account_id} закрыт. Операция недоступна.",
             )
-        monthly_interest = self.__min_balance * (self.__monthly_interest / 100)
+        monthly_interest = self.__monthly_interest / 100
         self._balance += monthly_interest
-        self.__min_balance = self._balance
         print(
             f"Счет {self._account_id}. Начислена месечная доходность: {monthly_interest} {self._currency}"
         )
 
     def withdraw(self, amount: Union[float, int]) -> None:
+        if (self._balance - amount) < self.__min_balance:
+            raise errors.InvalidOperationError(
+                self._account_id,
+                message=f"Счет {self._account_id} попытка снять сумму при которой минимальный баланс < {self.__min_balance}",
+            )
         super().withdraw(amount)
-        if self._balance < self.__min_balance:
-            self.__min_balance = self._balance
 
     def get_account_info(self) -> str:
         return str(self)

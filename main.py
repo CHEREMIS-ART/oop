@@ -36,9 +36,14 @@ if __name__ == "__main__":
         print(error.message)
 
     masha_savings_account = SavingsAccount(owner, 1000, "kzt", monthly_interest=1.3)
-    masha_savings_account.deposit(250)
-    masha_savings_account.withdraw(1150)
+    
+    masha_savings_account.deposit(2500)
+    masha_savings_account.withdraw(1000)
     masha_savings_account.deposit(2900)
+    try:
+        masha_savings_account.withdraw(5500)
+    except errors.InvalidOperationError as error:
+        print(error)
     masha_savings_account.freeze()
     try:
         masha_savings_account.apply_monthly_interest()
@@ -59,8 +64,9 @@ if __name__ == "__main__":
     masha_premium_account.deposit(200_000)
 
     owner_petr = OwnerInfo("Petr", "Petrov", 25, 5678, 1234567)
-    petr_ivest_account = InvestmentAccount(owner_petr, 50_000, Currency.RUB)
+    petr_ivest_account = InvestmentAccount(owner_petr, 55_000, Currency.RUB)
     print(petr_ivest_account)
+    petr_ivest_account.withdraw(5_000)
 
     stock1 = Stock(
         "YNDX", "Yandex", "RUB", 5000.0, 0.02, SectorType.INFORMATION_TECHNOLOGY
