@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict
 
 from bank_account import BankAccount
 from owner_info import OwnerInfo
@@ -104,50 +104,49 @@ class InvestmentAccount(BankAccount):
         return total
 
     def project_yearly_growth(
-        self, years: int, price_growth_rate: float = 0.05
+        self, growth_rates: Dict[str, Union[float, int]]
     ) -> float:
         if self._status == AccountStatus.FROZEN:
             raise errors.AccountFrozenError(self._account_id)
         if self._status == AccountStatus.CLOSED:
             raise errors.AccountClosedError(self._account_id)
-        if not isinstance(years, int):
+        if not isinstance(growth_rates, dict):
             raise errors.InstanceTypeError(
-                self.__class__.__name__, years, (int,), "years"
+                self.__class__.__name__, growth_rates, (dict,), "growth_rates"
             )
-        if years < 0:
+        if len(growth_rates) == 0:
             raise errors.InvalidOperationError(
-                self._account_id, "Количество лет должно быть >= 0"
-            )
-        if not isinstance(price_growth_rate, (float, int)):
-            raise errors.InstanceTypeError(
-                self.__class__.__name__,
-                price_growth_rate,
-                (float, int),
-                "price_growth_rate",
+                self._account_id,
+                "Количество подсчитываемых групп активов должно быть > 0",
             )
 
-        asset_value = self.get_total_asset_value()
-        balance = self._balance
+        available_keys = {"stocks", "bonds", "etf"}
+        if not available_keys.issubset(growth_rates.keys()):
+            raise errors.KeyNotFound()
+
+        for key in available_keys:
+            if not (
+                isinstance(growth_rates[key], (int, float))
+                and 0 < growth_rates[key] <= 100
+            ):
+                raise errors.ValueErrorInstnanceOrNegative()
 
         annual_income = 0.0
-        for data in self._assets.values():
-            asset = data["asset"]
-            quantity = data["quantity"]
+        for symbol in self._assets:
+            asset = self._assets[symbol]["asset"]
+            quantity = self._assets[symbol]["quantity"]
             if isinstance(asset, Stock):
-                annual_income += asset.calculate_dividend_income(quantity)
+                annual_income += asset.calculate_dividend_income(
+                    quantity, growth_rates["stocks"]
+                )
             elif isinstance(asset, Bond):
-                annual_income += asset.calculate_annual_coupon() * quantity
+                annual_income += (
+                    asset.calculate_annual_coupon(growth_rates["bonds"]) * quantity
+                )
             elif isinstance(asset, Etf):
-                annual_income += asset.calculate_annual_income_per_share() * quantity
+                annual_income += quantity * growth_rates["etf"]
 
-        total_value = balance + asset_value
-        if total_value == 0:
-            return 0.0
-
-        total_return = (price_growth_rate * asset_value + annual_income) / total_value
-        future_value = total_value * (1 + total_return) ** years
-
-        return future_value
+        return annual_income
 
     def accrue_income(self, days: int = 365) -> None:
         if self._status == AccountStatus.FROZEN:

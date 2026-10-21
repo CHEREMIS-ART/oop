@@ -40,15 +40,17 @@ class PremiumAccount(BankAccount):
                 self._account_id,
                 message=f"Счет ***{self._account_id}. Дневной лимит переводов исчерпан.",
             )
-        if (self._balance - amount) < self.__overdraft_limit:
+
+        amount_with_fee = amount + self._withdrawal_fee
+        if (self._balance - amount_with_fee) < self.__overdraft_limit:
             raise errors.InsufficientFundsError(
                 self._balance,
                 amount,
-                message=f"Счет {self._account_id}. Запрошено {amount} {self._currency}, предел овердрафта может быть превышен.",
+                message=f"Счет {self._account_id}. Запрошено {amount} {self._currency}, комиссия {self._withdrawal_fee}, итоговая сумма {amount_with_fee}, предел овердрафта может быть превышен.",
             )
-        self._daily_withdrawal_limit -= amount
-        self._balance -= amount
-        amount_with_fee = amount - self._withdrawal_fee
+        
+        self._daily_withdrawal_limit -= amount_with_fee
+        self._balance -= amount_with_fee
         print(
             f"Счет {self._account_id} снято {amount_with_fee} {self._currency}. Коммисия банка составила: {self._withdrawal_fee} {self._currency}. Баланс: {self._balance} {self._currency}"
         )

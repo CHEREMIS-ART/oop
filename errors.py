@@ -81,3 +81,15 @@ class InstanceTypeError(AccountError):
                 message = f"Класс: {self.class_name}. Ожидается тип: {type_names}. Передан тип: {actual_type}"
         self.message = message
         super().__init__(self.message)
+
+
+class KeyNotFound(AccountError):
+    def __init__(self):
+        self.message = "Нет ключей stocks, bonds, etf в словаре"
+        super().__init__(self.message)
+
+
+class ValueErrorInstnanceOrNegative(AccountError):
+    def __init__(self):
+        self.message = "Значение в переданном словаре должно быть > 0 но <= 100 и типом (int, float)"
+        super().__init__(self.message)

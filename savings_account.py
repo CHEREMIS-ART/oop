@@ -58,7 +58,7 @@ class SavingsAccount(BankAccount):
                 self._account_id,
                 f"Счет {self._account_id} закрыт. Операция недоступна.",
             )
-        monthly_interest = self.__monthly_interest / 100
+        monthly_interest = self._balance * self.__monthly_interest / 100
         self._balance += monthly_interest
         print(
             f"Счет {self._account_id}. Начислена месечная доходность: {monthly_interest} {self._currency}"

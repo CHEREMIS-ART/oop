@@ -36,7 +36,7 @@ if __name__ == "__main__":
         print(error.message)
 
     masha_savings_account = SavingsAccount(owner, 1000, "kzt", monthly_interest=1.3)
-    
+
     masha_savings_account.deposit(2500)
     masha_savings_account.withdraw(1000)
     masha_savings_account.deposit(2900)
@@ -56,9 +56,9 @@ if __name__ == "__main__":
     print(masha_premium_account.get_account_info())
     masha_premium_account.withdraw(90_000)
     masha_premium_account.withdraw(20_000)
-    masha_premium_account.withdraw(90_000)
+    masha_premium_account.withdraw(89_000)
     try:
-        masha_premium_account.withdraw(1000)
+        masha_premium_account.withdraw(2000)
     except errors.InsufficientFundsError as error:
         print(str(error))
     masha_premium_account.deposit(200_000)
@@ -96,6 +96,10 @@ if __name__ == "__main__":
         print(f"Ошибка при покупке: {e}")
 
     print(petr_ivest_account)
+    growth_rates = {"stocks": 10, "bonds": 7, "etf": 4}
+    print(
+        f"Расчет доходности если: {growth_rates}: {petr_ivest_account.project_yearly_growth({"stocks": 10, "bonds": 7, "etf": 4})}"
+    )
 
     try:
         petr_ivest_account.accrue_income(30)
