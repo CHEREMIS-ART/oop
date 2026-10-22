@@ -30,9 +30,7 @@ class Stock(Asset):
         self._sector = SectorType.from_str(sector)
         self._dividend_yield = dividend_yield
 
-    def calculate_dividend_income(
-        self, quantity: int, rate: Union[float, int] = None
-    ) -> float:
+    def calculate_dividend_income(self, quantity: int,) -> float:
         if not isinstance(quantity, int):
             raise InstanceTypeError(
                 self.__class__.__name__, quantity, (int,), "quantity"
@@ -41,15 +39,8 @@ class Stock(Asset):
             raise InvalidOperationError(
                 None, message="Количество финансовых инструментов должно быть > 0."
             )
-        if not isinstance(rate, (float, int)):
-            raise InstanceTypeError(self.__class__.__name__, rate, (int, float), "rate")
 
-        if rate is not None:
-            dividend_income = quantity * self._current_price * rate
-        else:
-            dividend_income = quantity * self._current_price * self._dividend_yield
-            
-        return dividend_income
+        return quantity * self._current_price * self._dividend_yield
 
     def __str__(self) -> str:
         return (

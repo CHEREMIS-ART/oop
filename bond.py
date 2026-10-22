@@ -51,16 +51,8 @@ class Bond(Asset):
     def calculate_current_yield(self) -> float:
         return (self._coupon_rate * self._face_value) / self._current_price
 
-    def calculate_annual_coupon(self, rate: Union[float, int] = None) -> float:
-        if not isinstance(rate, (float, int)):
-            raise InstanceTypeError(self.__class__.__name__, rate, (int, float), "rate")
-
-        if rate is not None:
-            annual_coupon = self._face_value * rate
-        else:
-            annual_coupon = elf._face_value * self._coupon_rate
-
-        return annual_coupon
+    def calculate_annual_coupon(self) -> float:
+        return self._face_value * self._coupon_rate
 
     def __str__(self) -> str:
         return (

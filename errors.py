@@ -91,5 +91,5 @@ class KeyNotFound(AccountError):
 
 class ValueErrorInstnanceOrNegative(AccountError):
     def __init__(self):
-        self.message = "Значение в переданном словаре должно быть > 0 но <= 100 и типом (int, float)"
+        self.message = "Значение в переданном словаре должно быть >= 0 но <= 1 и типом (int, float)"
         super().__init__(self.message)

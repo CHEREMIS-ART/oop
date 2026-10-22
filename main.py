@@ -96,9 +96,9 @@ if __name__ == "__main__":
         print(f"Ошибка при покупке: {e}")
 
     print(petr_ivest_account)
-    growth_rates = {"stocks": 10, "bonds": 7, "etf": 4}
+    growth_rates = {"stocks": 0.10, "bonds": 0.04, "etf": 0.07}
     print(
-        f"Расчет доходности если: {growth_rates}: {petr_ivest_account.project_yearly_growth({"stocks": 10, "bonds": 7, "etf": 4})}"
+        f"Расчет доходности если: {growth_rates}: {petr_ivest_account.project_yearly_growth(growth_rates)}"
     )
 
     try:

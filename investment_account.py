@@ -127,7 +127,7 @@ class InvestmentAccount(BankAccount):
         for key in available_keys:
             if not (
                 isinstance(growth_rates[key], (int, float))
-                and 0 < growth_rates[key] <= 100
+                and 0 <= growth_rates[key] <= 1
             ):
                 raise errors.ValueErrorInstnanceOrNegative()
 
@@ -136,15 +136,11 @@ class InvestmentAccount(BankAccount):
             asset = self._assets[symbol]["asset"]
             quantity = self._assets[symbol]["quantity"]
             if isinstance(asset, Stock):
-                annual_income += asset.calculate_dividend_income(
-                    quantity, growth_rates["stocks"]
-                )
+                annual_income += (asset.get_current_price() * quantity) * growth_rates["stocks"]
             elif isinstance(asset, Bond):
-                annual_income += (
-                    asset.calculate_annual_coupon(growth_rates["bonds"]) * quantity
-                )
+                annual_income += (asset.get_current_price() * quantity) * growth_rates["bonds"]
             elif isinstance(asset, Etf):
-                annual_income += quantity * growth_rates["etf"]
+                annual_income += (asset.get_current_price() * quantity) * growth_rates["etf"]
 
         return annual_income
 
